@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Bateria</title>
+</head>
+
+<body>
+    <h1>Relatório de Saúde da Bateria</h1>
+
+    <form method="post" action=" http://127.0.0.1:8000/bateria/relatorios">
+        <fieldset>
+            <legend>Dados de Referência (Bateria Nova)</legend>
+            <label>Tensão (V): <input type="number" step="0.01" name="tensao_ref" required></label><br>
+            <label>Corrente (A): <input type="number" step="0.01" name="corrente_ref" required></label>
+        </fieldset>
+        <br>
+        <fieldset>
+            <legend>Leitura Atual</legend>
+            <label>Tensão (V): <input type="number" step="0.01" name="tensao_atual" required></label><br>
+            <label>Corrente (A): <input type="number" step="0.01" name="corrente_atual" required></label>
+        </fieldset>
+        <br>
+        <button type="submit">Gerar Relatório</button>
+    </form>
+
+    {% if relatorio %}
+    <h2>Resultado do Relatório</h2>
+    <img src="data:image/png;base64,{{ relatorio }}" alt="Gráfico do Relatório da Bateria" />
+    {% endif %}
+
+</body>
+
+</html>
