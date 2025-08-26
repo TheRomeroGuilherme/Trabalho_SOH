@@ -1,5 +1,6 @@
 //=== Importacoes e bibliotecas ===//
-#include <Arduino.h>
+#include "config/config.h"
+#include "wifi-manager/wifi_manager.h"
 
 
 //=== Instâncias, variáveis globais e funções ===//
