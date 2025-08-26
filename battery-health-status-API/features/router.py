@@ -41,3 +41,13 @@ def gerar_relatorio(
         "battery_report.html",
         {"request": request, "relatorio": img_b64}
     )
+    
+@router.post("/dados")
+def receber_dados_arduino(dados: BatteryInput):
+    """
+    Rota para receber dados de tensão e corrente do Arduino.
+    """
+    # Processar e salvar os dados recebidos
+
+    print(f"Dados recebidos: Tensão={dados.tensao}, Corrente={dados.corrente}")
+    return {"status": "Dados recebidos com sucesso"}

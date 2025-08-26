@@ -1,4 +1,5 @@
 //=== Importacoes e bibliotecas ===//
+#include <HTTPClient.h>
 #include "config/config.h"
 #include "wifi-manager/wifi_manager.h"
 
@@ -17,13 +18,32 @@ void coletar_e_enviar_dados() {
   Leitura_Bruta_Tensao = analogRead(Pino_Tensao);
   Leitura_Bruta_Corrente = analogRead(Pino_Corrente);
 
-  Serial.print("tensao: ");
-  Serial.println(Leitura_Bruta_Tensao);
+  const char* serverUrl = "http://192.168.1.100:8000/bateria/dados";
 
-  Serial.print("corrente: ");
-  Serial.println(Leitura_Bruta_Corrente);
+  if(WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
 
-  Serial.println("---");
+    // Cria o payload JSON com os dados coletados
+    String payload = "{\"tensao\": " + String(Leitura_Bruta_Tensao) + ", \"corrente\": " + String(Leitura_Bruta_Corrente) + "}";
+
+    // Envia a requisição POST
+    int httpResponseCode = http.POST(payload);
+
+    if (httpResponseCode > 0) {
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+      String response = http.getString();
+      Serial.println(response);
+    } else {
+      Serial.print("Error on sending POST: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+  } else {
+    Serial.println("WiFi Disconnected");
+  }
 }
 
 //=== Função principais setup() e loop() ===//
