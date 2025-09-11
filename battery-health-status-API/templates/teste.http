@@ -1,0 +1,54 @@
+### Requisição para gerar relatório de saúde da bateria
+POST http://localhost:8000/bateria/relatorios/json
+Content-Type: application/json
+
+{
+  "leituras": [
+    { "tensao": 12.0, "corrente": 1.2 },
+    { "tensao": 11.9, "corrente": 1.3 },
+    { "tensao": 11.8, "corrente": 1.4 },
+    { "tensao": 11.7, "corrente": 1.5 },
+    { "tensao": 11.6, "corrente": 1.6 },
+    { "tensao": 11.5, "corrente": 1.7 },
+    { "tensao": 11.4, "corrente": 1.8 },
+    { "tensao": 11.3, "corrente": 1.9 },
+    { "tensao": 11.2, "corrente": 2.0 },
+    { "tensao": 11.1, "corrente": 2.1 }
+  ]
+}
+### Requisição para gerar relatório de saúde da bateria
+POST http://localhost:8000/bateria/relatorios/json
+Content-Type: application/json
+
+{
+  "leituras": [
+    { "tensao": 12.0, "corrente": 12.2 },
+    { "tensao": 11.9, "corrente": 2.3 },
+    { "tensao": 11.8, "corrente": 1.9 },
+    { "tensao": 11.7, "corrente": 1.8 },
+    { "tensao": 11.6, "corrente": 1.6 },
+    { "tensao": 11.5, "corrente": 1.6 },
+    { "tensao": 11.4, "corrente": 1.8 },
+    { "tensao": 11.3, "corrente": 1.9 },
+    { "tensao": 11.2, "corrente": 2.0 },
+    { "tensao": 11.1, "corrente": 2.1 }
+  ]
+}
+### Requisição para gerar relatório de saúde da bateria
+POST http://localhost:8000/bateria/relatorios/json
+Content-Type: application/json
+
+{
+  "leituras": [
+    { "tensao": 12.0, "corrente": 10.0 },
+    { "tensao": 11.9, "corrente": 9.0 },
+    { "tensao": 11.8, "corrente": 8.0 },
+    { "tensao": 11.7, "corrente": 7.0 },
+    { "tensao": 11.6, "corrente": 6.0 },
+    { "tensao": 11.5, "corrente": 5.0 },
+    { "tensao": 11.4, "corrente": 4.0 },
+    { "tensao": 11.3, "corrente": 3.0 },
+    { "tensao": 11.2, "corrente": 2.0 },
+    { "tensao": 11.1, "corrente": 1.0 }
+  ]
+}

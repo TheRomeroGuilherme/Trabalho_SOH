@@ -1,53 +1,30 @@
-from fastapi import APIRouter, Request, Form
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from .Reports import gerar_relatorio_grafico
-from .model.Bateria import BatteryDataSeries, BatteryInput, BatteryReference
+# features/routes_bateria_api.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import List
 
+# importe a função e o modelo do Reports (caminho absoluto)
+from features.Reports import gerar_relatorio_grafico, BatteryInputModel
 
-router = APIRouter(prefix="/bateria", tags=["Bateria"])
+router = APIRouter(prefix="/bateria", tags=["Bateria API"])
 
-templates = Jinja2Templates(directory="templates")
+class LeiturasRequest(BaseModel):
+    leituras: List[BatteryInputModel]
 
-@router.get("/relatorios", response_class=HTMLResponse)
-def mostrar_formulario_relatorio(request: Request):
-    """
-    Rota que exibe o formulário inicial para o usuário inserir os dados da bateria.
-    """
-    return templates.TemplateResponse("relatorio_bateria.html", {"request": request, "relatorio": None})
+class RelatorioResponse(BaseModel):
+    status_soh: str
+    imagem_base64: str
 
-@router.post("/relatorios", response_class=HTMLResponse)
-def gerar_relatorio(
-    request: Request,
-    tensao_ref: float = Form(...),
-    corrente_ref: float = Form(...),
-    tensao_atual: float = Form(...),
-    corrente_atual: float = Form(...)
-):
-    """
-    Rota que processa os dados do formulário e gera um relatório gráfico.
-    """
-    # Cria os objetos de dados com as informações do formulário
-    dados_bateria = BatteryDataSeries(
-        referencia=BatteryReference(tensao=tensao_ref, corrente=corrente_ref),
-        leituras=[BatteryInput(tensao=tensao_atual, corrente=corrente_atual)]
-    )
+@router.post("/relatorios/json", response_model=RelatorioResponse)
+def gerar_relatorio_json(payload: LeiturasRequest):
+    if not payload.leituras or len(payload.leituras) != 10:
+        raise HTTPException(status_code=400, detail="São necessárias exatamente 10 leituras.")
 
-    # Gera o gráfico e o retorna como uma string base64
-    img_b64 = gerar_relatorio_grafico(dados_bateria)
+    try:
+        img_b64, status_soh = gerar_relatorio_grafico(payload.leituras)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório: {e}")
 
-    # Renderiza a página novamente, mas agora com o relatório para exibir
-    return templates.TemplateResponse(
-        "battery_report.html",
-        {"request": request, "relatorio": img_b64}
-    )
-    
-@router.post("/dados")
-def receber_dados_arduino(dados: BatteryInput):
-    """
-    Rota para receber dados de tensão e corrente do Arduino.
-    """
-    # Processar e salvar os dados recebidos
-
-    print(f"Dados recebidos: Tensão={dados.tensao}, Corrente={dados.corrente}")
-    return {"status": "Dados recebidos com sucesso"}
+    return {"status_soh": status_soh, "imagem_base64": img_b64}
