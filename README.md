@@ -1,64 +1,56 @@
 # Trabalho_SOH: API de Análise de Saúde da Bateria
 
-Este projeto consiste em uma API desenvolvida com FastAPI para analisar a saúde (State of Health - SoH) de baterias a partir de leituras de tensão e corrente. O sistema gera um relatório detalhado e um gráfico de curva de descarga para visualização.
-
-O projeto inclui dois componentes principais:
-
--   **`battery-health-status-API`**: O servidor back-end em Python que processa os dados e gera os relatórios.
--   **`arduino-battery-health-status-API`**: O código para um microcontrolador Arduino que enviaria os dados de tensão e corrente para a API.
+Este projeto é composto por dois servidores locais:
+* **API (Back-end)**: Responsável por processar os dados e gerar os relatórios e gráficos.
+* **Front-end**: Uma página HTML que coleta os dados e exibe o relatório gerado pela API.
 
 ## 🚀 Como Rodar o Projeto
 
-Para rodar a aplicação, você precisa iniciar o servidor da API (back-end) e servir a página HTML (front-end) localmente.
+Para usar a aplicação, você precisa iniciar o servidor da API e o servidor do front-end em terminais separados.
 
-### Pré-requisitos
+### 1. Iniciar a API (Back-end)
 
-Certifique-se de que você tem o Python 3 instalado em seu sistema.
+A API é o servidor principal. Você precisa iniciá-la primeiro.
 
-### 1. Configuração e Inicialização da API (Back-end)
-
-1.  Navegue até o diretório da API no seu terminal:
+1.  Abra um terminal e navegue até a pasta `battery-health-status-API`.
     ```sh
     cd battery-health-status-API
     ```
 
-2.  Instale as dependências necessárias. O arquivo `requirements.txt` lista o `fastapi` e `uvicorn`, mas a funcionalidade de geração de gráficos também requer outras bibliotecas. Use o comando a seguir para instalar todas as dependências:
+2.  Instale as dependências (se ainda não o fez):
     ```sh
-    pip install -r requirements.txt pandas numpy matplotlib
+    pip install fastapi uvicorn pandas numpy matplotlib
     ```
 
-3.  Inicie o servidor da API. Ele será executado na porta `8000`.
+3.  Inicie a API. Ela será executada na porta `8000`.
     ```sh
     uvicorn main:app --reload
     ```
-    O servidor estará ativo e pronto para receber requisições.
+    Mantenha este terminal aberto e a API rodando.
 
-### 2. Configuração e Inicialização do Front-end
+### 2. Iniciar o Front-end
 
-A página HTML precisa ser servida por um servidor para evitar erros de CORS (Cross-Origin Resource Sharing).
+O navegador não permite que a página HTML se comunique com a API diretamente. Por isso, você precisa de um servidor simples para o front-end.
 
-1.  **Ajuste o Código HTML**:
-    O arquivo `battery_report.html` usa um caminho relativo para a API. Para que funcione corretamente em um servidor local, você precisa editá-lo para usar um caminho absoluto.
-    * Abra o arquivo `battery_report.html` em um editor de texto.
-    * Procure pela linha que começa com `const response = await fetch('/bateria/relatorios/json', {`.
-    * Substitua o caminho relativo pelo caminho completo da API: `http://localhost:8000/bateria/relatorios/json`.
-        ```javascript
-        const response = await fetch('http://localhost:8000/bateria/relatorios/json', {
-        ```
+1.  Abra um **novo terminal** e navegue para a pasta `templates`.
+    ```sh
+    cd battery-health-status-API/templates
+    ```
 
-2.  **Inicie o Servidor do Front-end**:
-    * Abra um **novo terminal** e navegue até a pasta `templates`:
-        ```sh
-        cd battery-health-status-API/templates
-        ```
-    * Inicie um servidor web simples com Python na porta `8001` (para não conflitar com a API):
-        ```sh
-        python -m http.server 8001
-        ```
+2.  Inicie o servidor web simples do Python. Ele usará a porta `8001` para não conflitar com a API.
+    ```sh
+    python -m http.server 8001
+    ```
+    Mantenha este terminal aberto.
 
-3.  **Acesse a Aplicação**:
-    * Abra seu navegador e acesse a URL:
-        ```
-        http://localhost:8001/battery_report.html
-        ```
-    * Agora, a página HTML pode enviar os dados para a API e exibir o relatório corretamente.
+### 3. Acessar a Aplicação
+
+Com ambos os servidores rodando, abra seu navegador e acesse a página do front-end: http://localhost:8001/battery_report.html
+
+
+
+
+
+
+
+
