@@ -18,7 +18,9 @@ void coletar_e_enviar_dados() {
   Leitura_Bruta_Tensao = analogRead(Pino_Tensao);
   Leitura_Bruta_Corrente = analogRead(Pino_Corrente);
 
-  const char* serverUrl = "http://192.168.1.100:8000/bateria/dados";
+  const char* serverUrl = "https://c2f0-189-12-11-2.ngrok-free.app/bateria/relatorios/json";
+  //para usar o arduino descomente o código de baixo e comente a linha de cima
+  //const char* serverUrl = "http://192.168.1.100:8000/bateria/dados";
 
   if(WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
