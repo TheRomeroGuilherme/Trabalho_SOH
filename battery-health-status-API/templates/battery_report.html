@@ -2,54 +2,141 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
-    <title>Dashboard de Saúde da Bateria</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relatório de Saúde da Bateria</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style> body { font-family: 'Inter', sans-serif; } </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+        }
+    </style>
 </head>
-<body class="min-h-screen p-6 flex items-center justify-center bg-gray-100">
-    <main class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-xl border">
-        <h1 class="text-3xl font-extrabold text-center text-blue-600 mb-6">
-            Dashboard de Saúde da Bateria
+
+<body class="min-h-screen p-6 flex justify-center">
+    <main class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-blue-600 mb-6">
+            Relatório de Saúde da Bateria
         </h1>
-        <p id="loadingMessage" class="text-center text-gray-600 mb-8">
-            Aguardando o recebimento dos dados do Wokwi... O relatório será exibido aqui automaticamente.
+        <p class="text-center text-gray-600 mb-8">
+            Insira as 10 leituras de Tensão e Corrente que seu Arduino enviaria.
         </p>
-        <section id="resultadoContainer" class="hidden mt-8 p-6 bg-gray-50 rounded-lg border">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Último Relatório Recebido</h2>
+
+        <form id="batteryForm" class="space-y-6" autocomplete="off">
+            <div id="leiturasContainer" class="space-y-4"></div>
+
+            <div class="flex gap-3">
+                <button id="submitBtn" type="submit"
+                    class="flex-1 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Gerar Relatório
+                </button>
+
+                <button id="resetBtn" type="reset"
+                    class="bg-gray-200 text-gray-800 font-medium py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                    Resetar
+                </button>
+            </div>
+        </form>
+
+        <div id="loadingIndicator" class="hidden text-center mt-6 text-gray-500">
+            <svg class="animate-spin h-6 w-6 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" role="status" aria-label="Carregando">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+            </svg>
+            <p class="mt-2">Gerando relatório...</p>
+        </div>
+
+        <section id="resultadoContainer" class="hidden mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Resultado do Relatório</h2>
             <div id="statusSOH" class="text-xl font-medium text-gray-700 mb-4"></div>
-            <div id="graficoContainer">
-                <img id="graficoImage" src="" alt="Gráfico da curva de descarga da bateria" class="w-full h-auto rounded-lg shadow-md">
+            <div id="graficoContainer" class="w-full">
+                <img id="graficoImage" src="" alt="Gráfico da curva de descarga da bateria"
+                    class="w-full h-auto rounded-lg shadow-md border border-gray-200">
             </div>
         </section>
     </main>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const loadingMessage = document.getElementById('loadingMessage');
+            const leiturasContainer = document.getElementById('leiturasContainer');
+            const batteryForm = document.getElementById('batteryForm');
             const resultadoContainer = document.getElementById('resultadoContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
             const statusSOH = document.getElementById('statusSOH');
             const graficoImage = document.getElementById('graficoImage');
+            const submitBtn = document.getElementById('submitBtn');
 
-            async function fetchLatestReport() {
-                try {
-                    // Aponta para o novo endpoint da API
-                    const response = await fetch('http://localhost:8000/bateria/leituras/ultimo');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data) { // Se a API retornou um relatório
-                            loadingMessage.classList.add('hidden');
-                            resultadoContainer.classList.remove('hidden');
-                            statusSOH.textContent = data.status_soh;
-                            graficoImage.src = `data:image/png;base64,${data.imagem_base64}`;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Erro ao buscar relatório:', error);
-                    loadingMessage.textContent = "Erro de conexão com a API. Verifique os terminais.";
+            function criarInputs() {
+                leiturasContainer.innerHTML = '';
+                for (let i = 0; i < 10; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'flex flex-col sm:flex-row gap-4 p-4 bg-gray-100 rounded-lg shadow-inner';
+                    div.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-700 w-full sm:w-auto">Leitura ${i + 1}</h3>
+                    <div class="flex-1">
+                        <label for="tensao${i}" class="block text-sm font-medium text-gray-600">Tensão (V)</label>
+                        <input type="number" step="0.01" id="tensao${i}" value="12.00" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="flex-1">
+                        <label for="corrente${i}" class="block text-sm font-medium text-gray-600">Corrente (A)</label>
+                        <input type="number" step="0.01" id="corrente${i}" value="1.20" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    `;
+                    leiturasContainer.appendChild(div);
                 }
             }
-            // A mágica acontece aqui: a página chama a função a cada 5 segundos
-            setInterval(fetchLatestReport, 5000);
+
+            criarInputs();
+
+            batteryForm.addEventListener('reset', () => {
+                resultadoContainer.classList.add('hidden');
+            });
+
+            batteryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const leituras = [];
+                for (let i = 0; i < 10; i++) {
+                    const tensao = document.getElementById(`tensao${i}`).value;
+                    const corrente = document.getElementById(`corrente${i}`).value;
+                    leituras.push({ tensao: parseFloat(tensao), corrente: parseFloat(corrente) });
+                }
+
+                submitBtn.disabled = true;
+                loadingIndicator.classList.remove('hidden');
+                resultadoContainer.classList.add('hidden');
+
+                try {
+                    const response = await fetch('http://localhost:8000/bateria/leituras', {  // Use URL absoluta aqui!
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ leituras })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        statusSOH.textContent = data.status_soh;
+                        graficoImage.src = `data:image/png;base64,${data.imagem_base64}`;
+                        resultadoContainer.classList.remove('hidden');
+                        resultadoContainer.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        statusSOH.textContent = `Erro: ${data.detail || response.statusText}`;
+                        resultadoContainer.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    statusSOH.textContent = `Erro de conexão: ${error.message}`;
+                    resultadoContainer.classList.remove('hidden');
+                } finally {
+                    loadingIndicator.classList.add('hidden');
+                    submitBtn.disabled = false;
+                }
+            });
         });
     </script>
 </body>
+
 </html>
